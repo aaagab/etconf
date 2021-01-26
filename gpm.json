@@ -1,0 +1,15 @@
+{
+    "authors": [
+        "Gabriel Auger"
+    ],
+    "deps": [],
+    "description": "Package configuration generator for Python GPM packages",
+    "filen_main": "main",
+    "installer": "gpm",
+    "licenses": [
+        "MIT"
+    ],
+    "name": "etconf",
+    "uuid4": "fe9fbe81-806f-4e85-8042-aaa33ce02d6a",
+    "version": "0.0.0"
+}
