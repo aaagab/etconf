@@ -14,8 +14,12 @@ class Etconf():
         seed=None,
     ):
         self.seed=seed
-        self.direpa_src=os.path.normpath(os.path.dirname(inspect.stack()[1].filename))
-        self.filenpa_gpm=os.path.join(self.direpa_src, "gpm.json")
+
+        filenpa_caller=inspect.stack()[1].filename
+        if os.path.islink(filenpa_caller):
+            filenpa_caller=os.path.realpath(filenpa_caller)
+        self.direpa_bin=os.path.normpath(os.path.dirname(filenpa_caller))
+        self.filenpa_gpm=os.path.join(self.direpa_bin, "gpm.json")
         if not os.path.exists(self.filenpa_gpm):
             self._error("gpm.json file not found '{}'".format(self.filenpa_gpm))
 
@@ -51,14 +55,14 @@ class Etconf():
         self.pkg_uuid4=self.dy_gpm["uuid4"].lower().replace("-", "")
         self.pkg_name=self.dy_gpm["name"].lower()
 
-        is_git_project=os.path.exists(os.path.join(self.direpa_src, ".git"))
+        is_git_project=os.path.exists(os.path.join(self.direpa_bin, ".git"))
         if is_git_project is True and enable_dev_conf is True:
-            self.direpa_conf=os.path.join(self.direpa_src, ".etconf", self.pkg_major)
+            self.direpa_configuration=os.path.join(self.direpa_bin, ".etconf", self.pkg_major)
         else:
             direpa_etc=os.path.join(os.path.expanduser("~"), "fty", "etc")
-            self.direpa_conf=os.path.join(direpa_etc, self.pkg_name[0], self.pkg_name, self.pkg_uuid4, self.pkg_major)
+            self.direpa_configuration=os.path.join(direpa_etc, self.pkg_name[0], self.pkg_name, self.pkg_uuid4, self.pkg_major)
 
-        self._process_tree(tree, self.direpa_conf)
+        self._process_tree(tree, self.direpa_configuration)
 
     def _error(self, text, direpa_delete=None):
         print("Etconf Error: {}.".format(text))
@@ -82,12 +86,12 @@ class Etconf():
             os.makedirs(direpa_root, exist_ok=True)
 
             if not isinstance(tree, dict):
-                self._error("in tree at key '{}' value type {} is not of type {}".format(error_key, type(tree), dict), self.direpa_conf)
+                self._error("in tree at key '{}' value type {} is not of type {}".format(error_key, type(tree), dict), self.direpa_configuration)
 
             for elem_type in sorted(tree):
                 if elem_type in ["dirs", "files"]:
                     if not isinstance(tree[elem_type], dict):
-                        self._error("in tree at key '{}' subkey '{}' is of type {} not {}".format(error_key, elem_type, type(tree[elem_type]), dict), self.direpa_conf)
+                        self._error("in tree at key '{}' subkey '{}' is of type {} not {}".format(error_key, elem_type, type(tree[elem_type]), dict), self.direpa_configuration)
 
                     for elem in tree[elem_type]:
                         elem=re.sub(r"\s", "-", elem.strip()).lower()
@@ -103,14 +107,14 @@ class Etconf():
                                     else:
                                         f.write("{}\n".format(value))
                 else:
-                    self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files']".format(error_key, elem), self.direpa_conf)
+                    self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files']".format(error_key, elem), self.direpa_configuration)
 
         if is_root is True and conf_generated is True:
             if self.seed is not None:
                 if callable(self.seed):
-                    direpa_pkg=os.path.dirname(self.direpa_conf)
+                    direpa_pkg=os.path.dirname(self.direpa_configuration)
                     direpa_pkgs={major:os.path.join(direpa_pkg, str(major)) for major in sorted(list(map(int, os.listdir(direpa_pkg))))}
-                    self.seed(direpa_pkgs)
+                    self.seed(self.pkg_major, direpa_pkgs)
                 else:
-                    self._error("seed is not a function", self.direpa_conf)
+                    self._error("seed is not a function", self.direpa_configuration)
 
