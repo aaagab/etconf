@@ -41,10 +41,12 @@ tree=dict(
     )
 )
 ```
-**seed**: Accept a function parameter. The function must be written by user if need. The function is executed only once when the configuration directory is created. The parameter returned is a dict with as pair:  
-- key is major version of package as integer
-- value is directory configuration path of the major version
-The use of this seed function is to migrate existing configuration data from a previous major version to the current major version. Any changes on configuration structure or parameters is considered a major change in the software (aka breaking change). That is why only major versions are targeted for package configuration.  
+**seed**: Accept a function parameter. The function must be written by user if need. The function is executed only once when the configuration directory is created. `seed` has two parameters:
+- `pkg_major`: It is an int with the major version of the package.
+- `direpas_configuration`: It is a dict with as pair:  
+  - key is major version of package as integer
+  - value is directory configuration path of the major version
+  The use of this seed function is to migrate existing configuration data from a previous major version to the current major version. Any changes on configuration structure or parameters is considered a major change in the software (aka breaking change). That is why only major versions are targeted for package configuration.  
 i.e.:  
 ```python
 {
@@ -54,7 +56,8 @@ i.e.:
 ```
 ## Etconf Class Parameters
 **self.dy_gpm**: It returns a dictionary with package gpm.json content.  
-**self.direpa_conf**: It returns the path of the package configuration.  
+**self.direpa_bin**: It returns the path of the bin package.  
+**self.direpa_configuration**: It returns the path of the package configuration.  
 **self.pkg_major**: It returns the package major version.  
 **self.pkg_name**: It returns the package name.  
 **self.pkg_uuid4**: It returns the pacakge UUID4 lowercased with dash removed.  
