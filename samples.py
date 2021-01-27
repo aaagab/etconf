@@ -33,3 +33,9 @@ if __name__ == "__main__":
         ),
         seed=seed,
     )
+
+    print(etconf.dy_gpm)
+    print(etconf.direpa_conf)
+    print(etconf.pkg_major)
+    print(etconf.pkg_name)
+    print(etconf.pkg_uuid4)
