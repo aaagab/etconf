@@ -1,0 +1,55 @@
+# Etconf
+## Description
+Package configuration generator for Python GPM packages. It allows to create a unique configuration directory for different packages with the same name, and also for packages with different versions.  
+Configurarion directory follows the syntax:  
+```shell
+$HOME/fty/etc/package_first_letter/package_name/uuid4/major_version
+# i.e
+/home/zeus/fty/etc/p/prompt/b1a980c36e1c4072a16c81df61f2f898/3
+```
+Then a dictionary of files with/without content and directories can be provided to populate the configuration directory.  
+
+Please cf `src/samples.py` for a working example.
+
+## Etconf Class Parameters
+```python
+etconf=pkg.Etconf(
+    enable_dev_conf=False,
+    tree=dict(),
+    seed=None,
+)
+```
+**enable_dev_conf**: Two scenarios:  
+- If program is located in a git directory(development mode):
+  - If enable_dev_conf is set to True then configuration directory `.etconf` is created at git root directory. 
+  - If enable_dev_conf is set to False then configuration directory is created at user home directory.  
+- If program is not located in a git directory:
+  - If enable_dev_conf is set to True or enable_dev_conf is set to False then configuration directory is created at user home directory.  
+**tree**: Provide a tree of elements dirs or files.  Etconf will create that structure into the configuration directory if this directory does not exists. Files name can take null as a value for empty file or any other value as a file content. Dict value type is going to be inserted as JSON and other value types are going to be inserted as text. Dirs name can only get an empty dict, or a dict with keywords files and/or dirs. Path for files or directories are put to lowercase and spaces are replaced with a dash.   
+```python
+tree=dict(
+    dirs=dict(
+        name=dict(
+            dirs=dict(
+                  name=dict()
+                ),
+            files=dict(name=None)
+        )
+    ),
+    files=dict(
+        name=None,
+    )
+)
+```
+**seed**: Accept a function parameter. The function must be written by user if need. The function is executed only once when the configuration directory is created. The parameter returned is a dict with as pair:  
+- key is major version of package as integer
+- value is directory configuration path of the major version
+The use of this seed function is to migrate existing configuration data from a previous major version to the current major version. Any changes on configuration structure or parameters is considered a major change in the software (aka breaking change). That is why only major versions are targeted for package configuration.  
+i.e.:
+```python
+{
+  2: '/home/zeus/fty/etc/p/prompt/b1a980c36e1c4072a16c81df61f2f898/2'
+  3: '/home/zeus/fty/etc/p/prompt/b1a980c36e1c4072a16c81df61f2f898/3'
+}
+```
+ 
