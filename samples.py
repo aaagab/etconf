@@ -11,7 +11,7 @@ if __name__ == "__main__":
     pkg = importlib.import_module(module_name)
     del sys.path[0]
 
-    def seed(direpas_configuration=dict()):
+    def seed(pkg_major, direpas_configuration=dict()):
         print("Execute migration logic here by using direpas_configuration dictionary.")
         pprint(direpas_configuration)
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     )
 
     print(etconf.dy_gpm)
-    print(etconf.direpa_conf)
+    print(etconf.direpa_configuration)
     print(etconf.pkg_major)
     print(etconf.pkg_name)
     print(etconf.pkg_uuid4)
