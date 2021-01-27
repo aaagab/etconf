@@ -45,11 +45,18 @@ tree=dict(
 - key is major version of package as integer
 - value is directory configuration path of the major version
 The use of this seed function is to migrate existing configuration data from a previous major version to the current major version. Any changes on configuration structure or parameters is considered a major change in the software (aka breaking change). That is why only major versions are targeted for package configuration.  
-i.e.:
+i.e.:  
 ```python
 {
   2: '/home/zeus/fty/etc/p/prompt/b1a980c36e1c4072a16c81df61f2f898/2'
   3: '/home/zeus/fty/etc/p/prompt/b1a980c36e1c4072a16c81df61f2f898/3'
 }
 ```
+## Etconf Class Parameters
+**self.dy_gpm**: It returns a dictionary with package gpm.json content.  
+**self.direpa_conf**: It returns the path of the package configuration.  
+**self.pkg_major**: It returns the package major version.  
+**self.pkg_name**: It returns the package name.  
+**self.pkg_uuid4**: It returns the pacakge UUID4 lowercased with dash removed.  
+
  
