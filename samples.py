@@ -16,6 +16,7 @@ if __name__ == "__main__":
         pprint(direpas_configuration)
 
     etconf=pkg.Etconf(
+        direpa_configuration=None,
         enable_dev_conf=True,
         tree=dict(
             dirs=dict(

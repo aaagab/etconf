@@ -3,9 +3,12 @@
 Package configuration generator for Python GPM packages. It allows to create a unique configuration directory for different packages with the same name, and also for packages with different versions.  
 Configurarion directory follows the syntax:  
 ```shell
+# at home directory
 $HOME/fty/etc/package_first_letter/package_name/uuid4/major_version
 # i.e
 /home/zeus/fty/etc/p/prompt/b1a980c36e1c4072a16c81df61f2f898/3
+# at git root directory
+/package-path/.etconf/major_version
 ```
 Then a dictionary of files with/without content and directories can be provided to populate the configuration directory.  
 
@@ -14,11 +17,13 @@ Please cf `src/samples.py` for a working example.
 ## Etconf Class Parameters
 ```python
 etconf=pkg.Etconf(
+    direpa_configuration=None,
     enable_dev_conf=False,
     tree=dict(),
     seed=None,
 )
 ```
+**direpa_configuration**: If enable_dev_conf is True and directory is a git project then configuration directory is set at git root directory. Otherwise if direpa_configuration is set then direpa configuration is going to be set there, else direpa configuration is going to be set at user home directory.
 **enable_dev_conf**: Two scenarios:  
 - If program is located in a git directory(development mode):
   - If enable_dev_conf is set to True then configuration directory `.etconf` is created at git root directory. 
