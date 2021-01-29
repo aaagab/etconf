@@ -11,9 +11,10 @@ if __name__ == "__main__":
     pkg = importlib.import_module(module_name)
     del sys.path[0]
 
-    def seed(pkg_major, direpas_configuration=dict()):
+    def seed(pkg_major, direpas_configuration=dict(), fun_auto_migrate=None):
         print("Execute migration logic here by using direpas_configuration dictionary.")
         pprint(direpas_configuration)
+        fun_auto_migrate()
 
     etconf=pkg.Etconf(
         direpa_configuration=None,
@@ -32,11 +33,14 @@ if __name__ == "__main__":
                 "configuration.json": dict(name="gabriel", job="developer"),
             })
         ),
+        reset_seed=False,
+        # reset_seed=True,
         seed=seed,
     )
 
     print(etconf.dy_gpm)
     print(etconf.direpa_configuration)
+    print(etconf.direpas_configuration)
     print(etconf.pkg_major)
     print(etconf.pkg_name)
     print(etconf.pkg_uuid4)
