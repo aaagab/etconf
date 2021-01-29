@@ -9,6 +9,7 @@ import traceback
 
 class Etconf():
     def __init__(self,
+        direpa_configuration=None,
         enable_dev_conf=True,
         tree=dict(),
         seed=None,
@@ -18,8 +19,8 @@ class Etconf():
         filenpa_caller=inspect.stack()[1].filename
         if os.path.islink(filenpa_caller):
             filenpa_caller=os.path.realpath(filenpa_caller)
-        self.direpa_bin=os.path.normpath(os.path.dirname(filenpa_caller))
-        self.filenpa_gpm=os.path.join(self.direpa_bin, "gpm.json")
+        self.direpa_main=os.path.normpath(os.path.dirname(filenpa_caller))
+        self.filenpa_gpm=os.path.join(self.direpa_main, "gpm.json")
         if not os.path.exists(self.filenpa_gpm):
             self._error("gpm.json file not found '{}'".format(self.filenpa_gpm))
 
@@ -55,13 +56,15 @@ class Etconf():
         self.pkg_uuid4=self.dy_gpm["uuid4"].lower().replace("-", "")
         self.pkg_name=self.dy_gpm["name"].lower()
 
-        is_git_project=os.path.exists(os.path.join(self.direpa_bin, ".git"))
+        is_git_project=os.path.exists(os.path.join(self.direpa_main, ".git"))
         if is_git_project is True and enable_dev_conf is True:
-            self.direpa_configuration=os.path.join(self.direpa_bin, ".etconf", self.pkg_major)
+            self.direpa_configuration=os.path.join(self.direpa_main, ".etconf", self.pkg_major)
         else:
-            direpa_etc=os.path.join(os.path.expanduser("~"), "fty", "etc")
-            self.direpa_configuration=os.path.join(direpa_etc, self.pkg_name[0], self.pkg_name, self.pkg_uuid4, self.pkg_major)
-
+            if direpa_configuration is not None:
+                self.direpa_configuration=direpa_configuration
+            else:
+                direpa_etc=os.path.join(os.path.expanduser("~"), "fty", "etc")
+                self.direpa_configuration=os.path.join(direpa_etc, self.pkg_name[0], self.pkg_name, self.pkg_uuid4, self.pkg_major)
         self._process_tree(tree, self.direpa_configuration)
 
     def _error(self, text, direpa_delete=None):
