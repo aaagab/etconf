@@ -19,6 +19,7 @@ Please cf `src/samples.py` for a working example.
 etconf=pkg.Etconf(
     direpa_configuration=None,
     enable_dev_conf=False,
+    reset_seed=False,
     tree=dict(),
     seed=None,
 )
@@ -46,7 +47,8 @@ tree=dict(
     )
 )
 ```
-**seed**: Accept a function parameter. The function must be written by user if need. The function is executed only once when the configuration directory is created. `seed` has two parameters:
+**reset_seed**: This parameter is mainly for debugging, if set to True and seed function has been defined by user then each time the program executes, the seed function is called.  
+**seed**: Accept a function parameter. The function must be defined by user if needed. The function is executed only once when the configuration directory is created. `seed` has two parameters:
 - `pkg_major`: It is an int with the major version of the package.
 - `direpas_configuration`: It is a dict with as pair:  
   - key is major version of package as integer
@@ -59,6 +61,11 @@ i.e.:
   3: '/home/zeus/fty/etc/p/prompt/b1a980c36e1c4072a16c81df61f2f898/3'
 }
 ```
+- `fun_auto_migrate`: This parameter is a function that can be executed in order to migrate data from a previous major version to the current major version. Data are basically copied from source to destination. The function is ignored if:  
+  -  There is only one major version in the direpa configuration directory. 
+  -  There is multiple major versions in the direpa configuration directory and the current major versions is not the highest one (error).  
+  Also if data already exists in current major version configuration directory, then user is prompted to allow the data to be overwritten.  
+  
 ## Etconf Class Parameters
 **self.dy_gpm**: It returns a dictionary with package gpm.json content.  
 **self.direpa_bin**: It returns the path of the bin package.  
