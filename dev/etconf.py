@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from distutils.dir_util import copy_tree
 from pprint import pprint
 import inspect
 import json
@@ -12,9 +13,13 @@ class Etconf():
         direpa_configuration=None,
         enable_dev_conf=True,
         tree=dict(),
+        reset_seed=False,
         seed=None,
     ):
+        self.direpas_configuration=dict()
         self.seed=seed
+        self.reset_seed=reset_seed
+
 
         filenpa_caller=inspect.stack()[1].filename
         if os.path.islink(filenpa_caller):
@@ -52,19 +57,19 @@ class Etconf():
             else:
                 self._error("in gpm.json '{}' with value '{}' does not match regex '{}'".format(key, value, dy_regex[key]["rule"]))
         
-        self.pkg_major=dy_regex["version"]["match"][0]
+        self.pkg_major=int(dy_regex["version"]["match"][0])
         self.pkg_uuid4=self.dy_gpm["uuid4"].lower().replace("-", "")
         self.pkg_name=self.dy_gpm["name"].lower()
 
         is_git_project=os.path.exists(os.path.join(self.direpa_main, ".git"))
         if is_git_project is True and enable_dev_conf is True:
-            self.direpa_configuration=os.path.join(self.direpa_main, ".etconf", self.pkg_major)
+            self.direpa_configuration=os.path.join(self.direpa_main, ".etconf", str(self.pkg_major))
         else:
             if direpa_configuration is not None:
                 self.direpa_configuration=direpa_configuration
             else:
                 direpa_etc=os.path.join(os.path.expanduser("~"), "fty", "etc")
-                self.direpa_configuration=os.path.join(direpa_etc, self.pkg_name[0], self.pkg_name, self.pkg_uuid4, self.pkg_major)
+                self.direpa_configuration=os.path.join(direpa_etc, self.pkg_name[0], self.pkg_name, self.pkg_uuid4, str(self.pkg_major))
         self._process_tree(tree, self.direpa_configuration)
 
     def _error(self, text, direpa_delete=None):
@@ -112,12 +117,65 @@ class Etconf():
                 else:
                     self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files']".format(error_key, elem), self.direpa_configuration)
 
-        if is_root is True and conf_generated is True:
+        if is_root is True and (conf_generated is True or self.reset_seed is True):
             if self.seed is not None:
                 if callable(self.seed):
                     direpa_pkg=os.path.dirname(self.direpa_configuration)
-                    direpa_pkgs={major:os.path.join(direpa_pkg, str(major)) for major in sorted(list(map(int, os.listdir(direpa_pkg))))}
-                    self.seed(self.pkg_major, direpa_pkgs)
+                    self.direpas_configuration={major:os.path.join(direpa_pkg, str(major)) for major in sorted(list(map(int, os.listdir(direpa_pkg))))}
+                    self.seed(self.pkg_major, self.direpas_configuration, fun_auto_migrate=self._fun_auto_migrate)
                 else:
                     self._error("seed is not a function", self.direpa_configuration)
 
+    def _fun_auto_migrate(self):
+        all_majors=sorted(self.direpas_configuration)
+        if self.pkg_major != all_majors[-1]:
+            print("WARNING Etconf: Ignoring auto-migrate for package '{}' due to major version '{}' is not the latest major version '{}' from '{}'".format(
+                self.pkg_name,
+                self.pkg_major,
+                all_majors[-1],
+                os.path.dirname(self.direpas_configuration[self.pkg_major]),
+            ))
+        else:
+            if len(self.direpas_configuration) > 1:
+                pass
+                index=all_majors.index(self.pkg_major)-1
+                previous_major=all_majors[index]
+                print("Etconf Processing Configuration Auto-Migrations for package '{}' from major version '{}' to '{}' at '{}':".format(
+                    self.pkg_name,
+                    previous_major,
+                    self.pkg_major,
+                    os.path.dirname(self.direpas_configuration[self.pkg_major]),
+                ))
+
+                direpa_src=self.direpas_configuration[previous_major]
+                direpa_dst=self.direpas_configuration[self.pkg_major]
+
+                migrate=True
+                if len(os.listdir(direpa_dst)) > 0:
+                    print("WARNING Etconf: Directory not empty '{}'".format(direpa_dst))
+                    user_input=None
+                    while user_input is None:
+                        user_input=input("Proceed anyway? [Ynq]: ").strip()
+                        if user_input == "" or user_input.lower() == "y":
+                            break
+                        elif user_input.lower() == "n":
+                            print("Warning Etconf Configuration Auto-Migrations ignored.")
+                            migrate=False
+                            break
+                        elif user_input.lower() == "q":
+                            print("Warning Etconf Configuration Auto-Migrations canceled.")
+                            sys.exit(1)
+                        else:
+                            print("Please type y, n, or q")
+                            user_input=None
+
+                if migrate is True:
+                    copy_tree(direpa_src, direpa_dst, update=1)
+                    print("SUCCESS Etconf: Configuration Auto-Migrations for package '{}' from major version '{}' to '{}' at '{}':".format(
+                        self.pkg_name,
+                        previous_major,
+                        self.pkg_major,
+                        os.path.dirname(self.direpas_configuration[self.pkg_major]),
+                    ))
+                    print("You can delete previous major directory if not needed:")
+                    print(direpa_src)
