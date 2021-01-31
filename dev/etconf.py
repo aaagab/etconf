@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-from distutils.dir_util import copy_tree
 from pprint import pprint
 import inspect
 import json
 import os
 import re
 import sys
+import shutil
 import traceback
 
 class Etconf():
@@ -19,8 +19,6 @@ class Etconf():
         self.direpas_configuration=dict()
         self.seed=seed
         self.reset_seed=reset_seed
-
-
         filenpa_caller=inspect.stack()[1].filename
         if os.path.islink(filenpa_caller):
             filenpa_caller=os.path.realpath(filenpa_caller)
@@ -170,7 +168,7 @@ class Etconf():
                             user_input=None
 
                 if migrate is True:
-                    copy_tree(direpa_src, direpa_dst, update=1)
+                    self.overwrite_paths(direpa_src, direpa_dst)
                     print("SUCCESS Etconf: Configuration Auto-Migrations for package '{}' from major version '{}' to '{}' at '{}':".format(
                         self.pkg_name,
                         previous_major,
@@ -179,3 +177,13 @@ class Etconf():
                     ))
                     print("You can delete previous major directory if not needed:")
                     print(direpa_src)
+
+    def overwrite_paths(self, direpa_src, direpa_dst):
+        for elem_name in os.listdir(direpa_src):
+            elem_path_src=os.path.normpath(os.path.join(direpa_src, elem_name)).replace("\\", "/")
+            elem_path_dst=os.path.normpath(os.path.join(direpa_dst, elem_name)).replace("\\", "/")
+            if os.path.isdir(elem_path_src):
+                os.makedirs(elem_path_dst, exist_ok=True)
+                self.overwrite_paths(elem_path_src, elem_path_dst)
+            else:
+                shutil.copy(elem_path_src, direpa_dst)
