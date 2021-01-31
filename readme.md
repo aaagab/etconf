@@ -64,7 +64,7 @@ i.e.:
 - `fun_auto_migrate`: This parameter is a function that can be executed in order to migrate data from a previous major version to the current major version. Data are basically copied from source to destination. The function is ignored if:  
   -  There is only one major version in the direpa configuration directory. 
   -  There is multiple major versions in the direpa configuration directory and the current major versions is not the highest one (error).  
-  Also if data already exists in current major version configuration directory, then user is prompted to allow the data to be overwritten.  
+  Also if data already exists in current major version configuration directory, then user is prompted to allow the data to be overwritten. Existing files on current major version are ignored if they do not exist in previous major version configuration directory. Existing files are overwritten.
   
 ## Etconf Class Parameters
 **self.dy_gpm**: It returns a dictionary with package gpm.json content.  
