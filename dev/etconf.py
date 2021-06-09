@@ -78,18 +78,28 @@ class Etconf():
         traceback.print_stack()
         sys.exit(1)
 
-    def _process_tree(self, tree, direpa_root, key=None):
+    def _process_tree(self, tree, direpa_root, dy_paths=None, key=None):
         is_root=False
         error_key=key
         if key is None:
             is_root=True
             error_key="root"
+            dy_paths=dict(
+                dirs=[],
+                files=dict(),
+            )
 
-        conf_generated=False
         if not os.path.exists(direpa_root):
-            conf_generated=True
             direpa_root=direpa_root.lower()
-            os.makedirs(direpa_root, exist_ok=True)
+            rm_dir=None
+            for direpa in dy_paths["dirs"]:
+                if len(direpa) <= len(direpa_root):
+                    if direpa == direpa_root[:len(direpa)]:
+                        rm_dir=direpa
+                        break
+            if rm_dir is not None:
+                dy_paths["dirs"].remove(rm_dir)
+            dy_paths["dirs"].append(direpa_root)
 
             if not isinstance(tree, dict):
                 self._error("in tree at key '{}' value type {} is not of type {}".format(error_key, type(tree), dict), self.direpa_configuration)
@@ -103,26 +113,34 @@ class Etconf():
                         elem=re.sub(r"\s", "-", elem.strip()).lower()
                         path_elem=os.path.join(direpa_root, elem)
                         if elem_type in "dirs":
-                            self._process_tree(tree[elem_type][elem], path_elem, elem)
+                            self._process_tree(tree[elem_type][elem], path_elem, dy_paths, elem)
                         elif elem_type == "files":
                             value=tree[elem_type][elem]
-                            with open(path_elem, "w") as f:
-                                if value is not None:
-                                    if isinstance(value, dict):
-                                        f.write(json.dumps(value, sort_keys=True, indent=4))
-                                    else:
-                                        f.write("{}\n".format(value))
+                            dy_paths["files"][path_elem]=value
                 else:
-                    self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files']".format(error_key, elem_type), self.direpa_configuration)
+                    self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files'].".format(error_key, elem_type), self.direpa_configuration)
 
-        if is_root is True and (conf_generated is True or self.reset_seed is True):
-            if self.seed is not None:
-                if callable(self.seed):
-                    direpa_pkg=os.path.dirname(self.direpa_configuration)
-                    self.direpas_configuration={major:os.path.join(direpa_pkg, str(major)) for major in sorted(list(map(int, os.listdir(direpa_pkg))))}
-                    self.seed(self.pkg_major, self.direpas_configuration, fun_auto_migrate=self._fun_auto_migrate)
-                else:
-                    self._error("seed is not a function", self.direpa_configuration)
+        if is_root is True:
+            if not os.path.exists(direpa_root):
+                for direpa in dy_paths["dirs"]:
+                    os.makedirs(direpa, exist_ok=True)
+
+                for filenpa, value in dy_paths["files"].items():
+                    with open(filenpa, "w") as f:
+                        if value is not None:
+                            if type(value) in [list, dict]:
+                                f.write(json.dumps(value, sort_keys=True, indent=4))
+                            else:
+                                f.write("{}\n".format(value))
+
+            if not os.path.exists(direpa_root) or self.reset_seed is True:
+                if self.seed is not None:
+                    if callable(self.seed):
+                        direpa_pkg=os.path.dirname(self.direpa_configuration)
+                        self.direpas_configuration={major:os.path.join(direpa_pkg, str(major)) for major in sorted(list(map(int, os.listdir(direpa_pkg))))}
+                        self.seed(self.pkg_major, self.direpas_configuration, fun_auto_migrate=self._fun_auto_migrate)
+                    else:
+                        self._error("seed is not a function", self.direpa_configuration)
 
     def _fun_auto_migrate(self):
         all_majors=sorted(self.direpas_configuration)
