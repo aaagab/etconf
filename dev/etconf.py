@@ -113,7 +113,7 @@ class Etconf():
                                     else:
                                         f.write("{}\n".format(value))
                 else:
-                    self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files']".format(error_key, elem), self.direpa_configuration)
+                    self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files']".format(error_key, elem_type), self.direpa_configuration)
 
         if is_root is True and (conf_generated is True or self.reset_seed is True):
             if self.seed is not None:
