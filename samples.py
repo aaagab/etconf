@@ -33,8 +33,8 @@ if __name__ == "__main__":
                 "configuration.json": dict(name="gabriel", job="developer"),
             })
         ),
-        reset_seed=False,
-        # reset_seed=True,
+        # reset_seed=False,
+        reset_seed=True,
         seed=seed,
     )
 
