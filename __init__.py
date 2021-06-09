@@ -2,6 +2,6 @@
 # authors: Gabriel Auger
 # name: etconf
 # licenses: MIT 
-__version__ = "2.2.3"
+__version__ = "2.2.4"
 
 from .dev.etconf import Etconf

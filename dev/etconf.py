@@ -118,7 +118,7 @@ class Etconf():
                             value=tree[elem_type][elem]
                             dy_paths["files"][path_elem]=value
                 else:
-                    self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files'].".format(error_key, elem_type), self.direpa_configuration)
+                    self._error("in tree at key '{}' subkey '{}' is not in ['dirs', 'files']".format(error_key, elem_type), self.direpa_configuration)
 
         if is_root is True:
             if not os.path.exists(direpa_root):
