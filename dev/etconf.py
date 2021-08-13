@@ -122,6 +122,7 @@ class Etconf():
 
         if is_root is True:
             if not os.path.exists(direpa_root):
+                self.reset_seed=True
                 for direpa in dy_paths["dirs"]:
                     os.makedirs(direpa, exist_ok=True)
 
@@ -133,7 +134,7 @@ class Etconf():
                             else:
                                 f.write("{}\n".format(value))
 
-            if not os.path.exists(direpa_root) or self.reset_seed is True:
+            if self.reset_seed is True:
                 if self.seed is not None:
                     if callable(self.seed):
                         direpa_pkg=os.path.dirname(self.direpa_configuration)
