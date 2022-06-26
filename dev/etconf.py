@@ -32,9 +32,6 @@ class Etconf():
             self.dy_gpm=json.load(f)
 
         dy_regex=dict(
-            name=dict(
-                rule=r"^[A-Za-z][A-Za-z0-9_-]*$",
-            ),
             uuid4=dict(
                 rule=r"^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-4[0-9a-fA-F]{3}\-[89ab][0-9a-fA-F]{3}\-[0-9a-fA-F]{12}$",
             ),
@@ -43,7 +40,19 @@ class Etconf():
             ),
         )
 
-        for key in ["name", "version" , "uuid4"]:
+        keys=[]
+        if "alias" in self.dy_gpm:
+            keys.append("alias")
+            dy_regex["alias"]=dict(rule=r"^[A-Za-z][A-Za-z0-9_-]*$")
+            self.pkg_alias=self.dy_gpm["alias"].lower()
+        else:
+            keys.append("name")
+            dy_regex["name"]=dict(rule=r"^[A-Za-z][A-Za-z0-9_-]*$")
+            self.pkg_alias=self.dy_gpm["name"].lower()
+
+        keys.extend(["version", "uuid4"])
+
+        for key in keys:
             if not key in self.dy_gpm:
                 self._error("in gpm.json '{}' not found".format(key))
             value=self.dy_gpm[key].strip()
@@ -57,7 +66,6 @@ class Etconf():
         
         self.pkg_major=int(dy_regex["version"]["match"][0])
         self.pkg_uuid4=self.dy_gpm["uuid4"].lower().replace("-", "")
-        self.pkg_name=self.dy_gpm["name"].lower()
 
         is_git_project=os.path.exists(os.path.join(self.direpa_main, ".git"))
         if is_git_project is True and enable_dev_conf is True:
@@ -67,7 +75,7 @@ class Etconf():
                 self.direpa_configuration=direpa_configuration
             else:
                 direpa_etc=os.path.join(os.path.expanduser("~"), "fty", "etc")
-                self.direpa_configuration=os.path.join(direpa_etc, self.pkg_name[0], self.pkg_name, self.pkg_uuid4, str(self.pkg_major))
+                self.direpa_configuration=os.path.join(direpa_etc, self.pkg_alias[0], self.pkg_alias, self.pkg_uuid4, str(self.pkg_major))
         self._process_tree(tree, self.direpa_configuration)
 
     def _error(self, text, direpa_delete=None):
@@ -147,7 +155,7 @@ class Etconf():
         all_majors=sorted(self.direpas_configuration)
         if self.pkg_major != all_majors[-1]:
             print("WARNING Etconf: Ignoring auto-migrate for package '{}' due to major version '{}' is not the latest major version '{}' from '{}'".format(
-                self.pkg_name,
+                self.pkg_alias,
                 self.pkg_major,
                 all_majors[-1],
                 os.path.dirname(self.direpas_configuration[self.pkg_major]),
@@ -158,7 +166,7 @@ class Etconf():
                 index=all_majors.index(self.pkg_major)-1
                 previous_major=all_majors[index]
                 print("Etconf Processing Configuration Auto-Migrations for package '{}' from major version '{}' to '{}' at '{}':".format(
-                    self.pkg_name,
+                    self.pkg_alias,
                     previous_major,
                     self.pkg_major,
                     os.path.dirname(self.direpas_configuration[self.pkg_major]),
@@ -189,7 +197,7 @@ class Etconf():
                 if migrate is True:
                     self.overwrite_paths(direpa_src, direpa_dst)
                     print("SUCCESS Etconf: Configuration Auto-Migrations for package '{}' from major version '{}' to '{}' at '{}':".format(
-                        self.pkg_name,
+                        self.pkg_alias,
                         previous_major,
                         self.pkg_major,
                         os.path.dirname(self.direpas_configuration[self.pkg_major]),
