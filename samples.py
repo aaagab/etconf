@@ -42,5 +42,5 @@ if __name__ == "__main__":
     print(etconf.direpa_configuration)
     print(etconf.direpas_configuration)
     print(etconf.pkg_major)
-    print(etconf.pkg_name)
+    print(etconf.pkg_alias)
     print(etconf.pkg_uuid4)
