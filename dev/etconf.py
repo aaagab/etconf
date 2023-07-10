@@ -11,6 +11,7 @@ import traceback
 class Etconf():
     def __init__(self,
         direpa_configuration=None,
+        filenpa_gpm=None,
         enable_dev_conf=True,
         tree=dict(),
         reset_seed=False,
@@ -22,8 +23,14 @@ class Etconf():
         filenpa_caller=inspect.stack()[1].filename
         if os.path.islink(filenpa_caller):
             filenpa_caller=os.path.realpath(filenpa_caller)
-        self.direpa_main=os.path.normpath(os.path.dirname(filenpa_caller))
-        self.filenpa_gpm=os.path.join(self.direpa_main, "gpm.json")
+        
+        self.filenpa_gpm=filenpa_gpm
+        if self.filenpa_gpm is None:
+            self.direpa_main=os.path.normpath(os.path.dirname(filenpa_caller))
+            self.filenpa_gpm=os.path.join(self.direpa_main, "gpm.json")
+        else:
+            self.direpa_main=os.path.normpath(os.path.dirname(self.filenpa_gpm))
+
         if not os.path.exists(self.filenpa_gpm):
             self._error("gpm.json file not found '{}'".format(self.filenpa_gpm))
 
